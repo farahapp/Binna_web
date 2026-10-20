@@ -16,12 +16,14 @@ import {
   addMilestone,
   markMilestoneReached,
   assignTeamMember,
+  updateActivityStatus,
   type Project,
   type ProjectStatus,
   type ProjectTeamMember,
   type CreateActivityPayload,
   type CreateDailyReportPayload,
   type CreateMilestonePayload,
+  type ActivityStatus,
   extractMessage,
 } from '@/lib/api/projects'
 import { LoadingSpinner } from '@/components/ui/loading'
@@ -374,6 +376,169 @@ function TeamSection({
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── Section: Activity Status Update — API-GAP-M2-01 ─────────────────────────
+
+const ACTIVITY_STATUS_LABELS: Record<ActivityStatus, string> = {
+  pending: 'معلّق',
+  in_progress: 'قيد التنفيذ',
+  completed: 'مكتمل',
+  cancelled: 'ملغى',
+}
+
+const VALID_TRANSITIONS: Record<ActivityStatus, ActivityStatus[]> = {
+  pending: ['in_progress', 'cancelled'],
+  in_progress: ['completed', 'cancelled'],
+  completed: [],
+  cancelled: [],
+}
+
+function ActivityStatusUpdateSection() {
+  const [activityId, setActivityId] = useState('')
+  const [currentStatus, setCurrentStatus] = useState<ActivityStatus>('pending')
+  const [newStatus, setNewStatus] = useState<ActivityStatus | ''>('')
+  const [updating, setUpdating] = useState(false)
+  const [updateError, setUpdateError] = useState<string | null>(null)
+  const [updateSuccess, setUpdateSuccess] = useState<string | null>(null)
+  const [updatedActivity, setUpdatedActivity] = useState<{ id?: string; status?: string; actual_start?: string; actual_end?: string } | null>(null)
+
+  const allowedNext = VALID_TRANSITIONS[currentStatus]
+
+  async function handleUpdateStatus(e: React.FormEvent) {
+    e.preventDefault()
+    setUpdateError(null)
+    setUpdateSuccess(null)
+    setUpdatedActivity(null)
+
+    if (!activityId.trim()) {
+      setUpdateError('معرّف النشاط مطلوب')
+      return
+    }
+    if (!newStatus) {
+      setUpdateError('يجب اختيار الحالة الجديدة')
+      return
+    }
+
+    setUpdating(true)
+    try {
+      const result = await updateActivityStatus(activityId.trim(), newStatus as ActivityStatus)
+      setUpdatedActivity(result)
+      setUpdateSuccess(`تم تحديث حالة النشاط إلى "${ACTIVITY_STATUS_LABELS[newStatus as ActivityStatus]}" بنجاح`)
+      // Reflect new status locally so transitions update immediately
+      setCurrentStatus(newStatus as ActivityStatus)
+      setNewStatus('')
+    } catch (err: unknown) {
+      setUpdateError(extractMessage(err, 'فشل تحديث حالة النشاط'))
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold text-foreground">تحديث حالة نشاط WBS</h2>
+
+      <div className="bg-card border border-border rounded-lg p-5 space-y-4">
+        <form onSubmit={handleUpdateStatus} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-foreground" htmlFor="activity_id_input">
+                معرّف النشاط (UUID) <span className="text-destructive">*</span>
+              </label>
+              <input
+                id="activity_id_input"
+                type="text"
+                value={activityId}
+                onChange={(e) => {
+                  setActivityId(e.target.value)
+                  setUpdateError(null)
+                  setUpdateSuccess(null)
+                  setUpdatedActivity(null)
+                }}
+                className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-foreground" htmlFor="current_status_select">
+                الحالة الحالية
+              </label>
+              <select
+                id="current_status_select"
+                value={currentStatus}
+                onChange={(e) => {
+                  setCurrentStatus(e.target.value as ActivityStatus)
+                  setNewStatus('')
+                  setUpdateError(null)
+                  setUpdateSuccess(null)
+                }}
+                className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                {(Object.keys(ACTIVITY_STATUS_LABELS) as ActivityStatus[]).map((s) => (
+                  <option key={s} value={s}>{ACTIVITY_STATUS_LABELS[s]}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1 sm:col-span-2">
+              <label className="text-sm font-medium text-foreground" htmlFor="new_status_select">
+                الحالة الجديدة <span className="text-destructive">*</span>
+              </label>
+              {allowedNext.length === 0 ? (
+                <p className="text-sm text-muted-foreground p-2 bg-muted rounded-md">
+                  الحالة &quot;{ACTIVITY_STATUS_LABELS[currentStatus]}&quot; نهائية — لا توجد انتقالات متاحة.
+                </p>
+              ) : (
+                <select
+                  id="new_status_select"
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value as ActivityStatus)}
+                  className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                >
+                  <option value="">— اختر الحالة الجديدة —</option>
+                  {allowedNext.map((s) => (
+                    <option key={s} value={s}>{ACTIVITY_STATUS_LABELS[s]}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
+
+          {updateError && <ErrorDisplay message={updateError} />}
+
+          {updateSuccess && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+              {updateSuccess}
+            </div>
+          )}
+
+          {updatedActivity && (
+            <div className="p-3 bg-muted rounded-md text-xs text-muted-foreground space-y-1">
+              <p><span className="font-medium">ID:</span> {updatedActivity.id ?? '—'}</p>
+              <p><span className="font-medium">الحالة:</span> {updatedActivity.status ?? '—'}</p>
+              {updatedActivity.actual_start && (
+                <p><span className="font-medium">بداية فعلية:</span> {updatedActivity.actual_start}</p>
+              )}
+              {updatedActivity.actual_end && (
+                <p><span className="font-medium">نهاية فعلية:</span> {updatedActivity.actual_end}</p>
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={updating || allowedNext.length === 0 || !newStatus}
+            >
+              {updating ? 'جارٍ التحديث...' : 'تحديث الحالة'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
@@ -977,7 +1142,7 @@ export default function ProjectDetailPage() {
   const [teamError, setTeamError] = useState<string | null>(null)
 
   const [activeTab, setActiveTab] = useState<
-    'info' | 'team' | 'activities' | 'milestones' | 'reports'
+    'info' | 'team' | 'activities' | 'activity-status' | 'milestones' | 'reports'
   >('info')
 
   const fetchProject = useCallback(() => {
@@ -1012,6 +1177,7 @@ export default function ProjectDetailPage() {
     { key: 'info' as const, label: 'معلومات المشروع' },
     { key: 'team' as const, label: 'الفريق' },
     { key: 'activities' as const, label: 'الأنشطة' },
+    { key: 'activity-status' as const, label: 'حالة النشاط' },
     { key: 'milestones' as const, label: 'المعالم' },
     { key: 'reports' as const, label: 'التقارير اليومية' },
   ]
@@ -1078,6 +1244,7 @@ export default function ProjectDetailPage() {
               />
             )}
             {activeTab === 'activities' && <ActivitiesSection projectId={id} />}
+            {activeTab === 'activity-status' && <ActivityStatusUpdateSection />}
             {activeTab === 'milestones' && <MilestonesSection projectId={id} />}
             {activeTab === 'reports' && <DailyReportsSection projectId={id} />}
           </div>

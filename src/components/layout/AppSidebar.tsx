@@ -28,6 +28,7 @@ const navItems: NavItem[] = [
   { label: 'التقارير', href: '/reports', icon: '📈' },
   { label: 'الوثائق', href: '/documents', icon: '📁' },
   { label: 'الإشعارات', href: '/notifications', icon: '🔔' },
+  { label: 'الإدارة', href: '/administration', icon: '⚙️' },
 ]
 
 interface AppSidebarProps {

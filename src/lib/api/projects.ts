@@ -47,9 +47,15 @@ export interface ProjectActivity {
   description?: string
   planned_start?: string
   planned_end?: string
+  actual_start?: string
+  actual_end?: string
   parent_activity_id?: string
+  status?: string
+  tenant_slug?: string
   [key: string]: unknown
 }
+
+export type ActivityStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled'
 
 export interface CreateActivityPayload {
   name: string
@@ -249,4 +255,26 @@ export async function assignTeamMember(
   return 'data' in res.data && !Array.isArray(res.data)
     ? (res.data as { data: ProjectTeamMember }).data
     : (res.data as ProjectTeamMember)
+}
+
+// ─── Activity Status Update — API-GAP-M2-01 ──────────────────────────────────
+// PATCH /api/v1/projects/activities/{activityId}/status
+// Body: { status: ActivityStatus }
+// Valid transitions:
+//   pending     → in_progress | cancelled
+//   in_progress → completed   | cancelled
+//   completed   → (terminal)
+//   cancelled   → (terminal)
+
+export async function updateActivityStatus(
+  activityId: string,
+  status: ActivityStatus
+): Promise<ProjectActivity> {
+  const res = await apiClient.patch<ProjectActivity | { data: ProjectActivity }>(
+    `/v1/projects/activities/${activityId}/status`,
+    { status }
+  )
+  return 'data' in res.data && !Array.isArray(res.data)
+    ? (res.data as { data: ProjectActivity }).data
+    : (res.data as ProjectActivity)
 }

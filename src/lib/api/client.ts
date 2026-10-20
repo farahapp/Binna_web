@@ -9,7 +9,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8
  * C-002 §26 — RESOLVED 2026-10-07:
  * Uses Laravel Sanctum SPA Cookie authentication.
  * - `withCredentials: true` enables sending session cookies and XSRF-TOKEN.
- * - Axios automatically reads the XSRF-TOKEN cookie and sends X-XSRF-TOKEN header.
+ * - `withXSRFToken: true` forces Axios to read XSRF-TOKEN and send X-XSRF-TOKEN
+ *   on every request, regardless of port. Required because the web app (:3000)
+ *   and the API (:8000) are on different ports — Axios 1.x same-origin guard
+ *   would otherwise suppress the header silently (→ HTTP 419).
  * - No Bearer PAT token is sent or stored.
  * - Tenant context: X-Tenant header sent from NEXT_PUBLIC_TENANT_SLUG env var.
  *   Backend resolves schema from DB only — schema is NEVER sent from frontend.
@@ -27,7 +30,8 @@ export const apiClient: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  withCredentials: true, // Required for SPA Cookie auth (session + XSRF-TOKEN)
+  withCredentials: true,  // Required for SPA Cookie auth (session + XSRF-TOKEN)
+  withXSRFToken: true,    // Required: API on :8000 ≠ web on :3000 — override same-origin guard
   timeout: 30000,
 })
 
