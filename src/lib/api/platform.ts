@@ -136,6 +136,32 @@ export const platformAuthApi = {
   async me(): Promise<PlatformOperator> {
     return platformFetch('/platform/auth/me')
   },
+
+  /**
+   * Change the authenticated platform operator's password.
+   *
+   * POST /api/platform/auth/change-password
+   * Body: { current_password, new_password, new_password_confirmation }
+   * Response 200: { message: string }
+   * Response 422: validation errors (wrong current password, too short, identical, mismatch)
+   *
+   * Security: uses Platform Bearer Token — never X-Tenant or Tenant Axios client.
+   * No password or token is logged or returned beyond the success message.
+   */
+  async changePassword(
+    currentPassword: string,
+    newPassword: string,
+    newPasswordConfirmation: string,
+  ): Promise<{ message: string }> {
+    return platformFetch('/platform/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password:           currentPassword,
+        new_password:               newPassword,
+        new_password_confirmation:  newPasswordConfirmation,
+      }),
+    })
+  },
 }
 
 // ─── Tenants ──────────────────────────────────────────────────────────────────
