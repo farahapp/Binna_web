@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
-import { tokenStorage } from '@/lib/auth/token'
+import { tokenStorage, tenantStorage } from '@/lib/auth/token'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000'
 
@@ -36,9 +36,14 @@ export const apiClient: AxiosInstance = axios.create({
 })
 
 // Request interceptor — attach X-Tenant header (slug only, schema resolved by backend)
+// Priority: (1) dynamic slug from tenantStorage (set at Company Login)
+//           (2) static slug from NEXT_PUBLIC_TENANT_SLUG env var (fallback)
+// Platform Admin routes do NOT use this client — they use platformFetch() in platform.ts.
 apiClient.interceptors.request.use(
   (config) => {
-    const tenantSlug = process.env.NEXT_PUBLIC_TENANT_SLUG
+    const dynamicSlug = tenantStorage.get()
+    const envSlug     = process.env.NEXT_PUBLIC_TENANT_SLUG
+    const tenantSlug  = dynamicSlug ?? envSlug
     if (tenantSlug) {
       config.headers['X-Tenant'] = tenantSlug
     }

@@ -7,9 +7,14 @@
  * Authentication state is managed via HttpOnly session cookies (server-side).
  * The XSRF-TOKEN cookie (non-httpOnly) is read automatically by Axios
  * when withCredentials=true and sent as X-XSRF-TOKEN header.
+ *
+ * Tenant slug: stored in sessionStorage after Company Login.
+ * Used by apiClient interceptor as dynamic X-Tenant header.
+ * Falls back to NEXT_PUBLIC_TENANT_SLUG env var if not set.
  */
 
-const SESSION_FLAG_KEY = 'binaa2_session_active'
+const SESSION_FLAG_KEY  = 'binaa2_session_active'
+const TENANT_SLUG_KEY   = 'binaa2_tenant_slug'
 
 /**
  * tokenStorage is kept for API compatibility with existing components,
@@ -39,5 +44,28 @@ export const tokenStorage = {
   isAuthenticated(): boolean {
     if (typeof window === 'undefined') return false
     return sessionStorage.getItem(SESSION_FLAG_KEY) === '1'
+  },
+}
+
+/**
+ * tenantStorage — stores the Company tenant slug entered at login.
+ * Non-sensitive: slug is a public identifier (not a secret).
+ * Used by apiClient interceptor to set X-Tenant header dynamically.
+ * Falls back to NEXT_PUBLIC_TENANT_SLUG env var when not set.
+ */
+export const tenantStorage = {
+  get(): string | null {
+    if (typeof window === 'undefined') return null
+    return sessionStorage.getItem(TENANT_SLUG_KEY)
+  },
+
+  set(slug: string): void {
+    if (typeof window === 'undefined') return
+    sessionStorage.setItem(TENANT_SLUG_KEY, slug.trim().toLowerCase())
+  },
+
+  clear(): void {
+    if (typeof window === 'undefined') return
+    sessionStorage.removeItem(TENANT_SLUG_KEY)
   },
 }
