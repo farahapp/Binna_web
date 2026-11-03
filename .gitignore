@@ -36,3 +36,10 @@ next-env.d.ts
 # local build and diagnostic output files
 tsc_output.txt
 build_output.txt
+tsc_*.txt
+nextjs_dev.log
+
+# test artefacts (runtime output — not committed)
+test-results/
+playwright-report/
+_run_tc_l06.ps1  
