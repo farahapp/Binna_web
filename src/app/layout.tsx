@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'BINAA2 — نظام إدارة المقاولات',
-  description: 'BINAA2 Construction ERP System',
+  title: 'بناء قطر | BINAA QATAR — نظام إدارة المقاولات',
+  description: 'BINAA QATAR — Construction ERP for Qatar',
+  applicationName: 'BINAA QATAR',
 }
 
 export default function RootLayout({

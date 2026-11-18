@@ -1,5 +1,11 @@
-/* ─── Arabic Font ─────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap');
+/* ─── BINAA QATAR — Cairo Arabic-first (self-hosted variable font) ────────── */
+@font-face {
+  font-family: 'Cairo';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/Cairo/Cairo-Variable.ttf') format('truetype');
+}
 
 @tailwind base;
 @tailwind components;
@@ -7,31 +13,36 @@
 
 @layer base {
   :root {
-    /* ── shadcn/ui base tokens ── */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* ── BINAA D.0 tokens — navy + teal enterprise SaaS ── */
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 214 73% 19%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 174 40% 94%;
+    --secondary-foreground: 174 100% 22%;
+    --muted: 220 16% 94%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 174 100% 27%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 174 100% 27%;
+    --radius: 0.625rem;
+    --brand-navy: 214 73% 19%;
+    --brand-teal: 174 100% 27%;
+    --warning: 32 95% 44%;
+    --success: 142 71% 45%;
 
-    /* ── Typography ── */
-    --font-sans: 'Noto Sans Arabic', 'Segoe UI', Tahoma, Arial, sans-serif;
-    --font-arabic: 'Noto Sans Arabic', 'Segoe UI', Tahoma, Arial, sans-serif;
+    /* ── Typography — Cairo primary; system Latin fallback ── */
+    --font-cairo: 'Cairo';
+    --font-sans: var(--font-cairo), 'Segoe UI', Tahoma, Arial, sans-serif;
+    --font-arabic: var(--font-cairo), 'Segoe UI', Tahoma, Arial, sans-serif;
 
     /* ── Status color tokens (light) ── */
     --status-draft-bg: 48 96% 89%;
@@ -61,25 +72,29 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 214 40% 8%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 214 35% 12%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 214 35% 12%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary: 174 70% 42%;
+    --primary-foreground: 214 73% 10%;
+    --secondary: 214 30% 18%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --muted: 214 28% 16%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 174 60% 36%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 40%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 214 28% 20%;
+    --input: 214 28% 20%;
+    --ring: 174 70% 42%;
+    --brand-navy: 214 50% 70%;
+    --brand-teal: 174 70% 42%;
+    --warning: 32 90% 55%;
+    --success: 142 55% 45%;
 
     /* ── Status color tokens (dark) ── */
     --status-draft-bg: 32 60% 20%;

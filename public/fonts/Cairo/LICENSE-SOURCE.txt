@@ -1,0 +1,4 @@
+﻿Source: Google Fonts / google/fonts ofl/cairo (SIL OFL 1.1)
+File: Cairo-Variable.ttf (slnt,wght axis)
+Vendor path: shared-assets/fonts/Cairo/
+Copied into each Flutter app fonts/ directory for bundling.
